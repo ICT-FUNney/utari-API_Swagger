@@ -1,0 +1,275 @@
+openapi: 3.0.0
+info:
+  title: utari-API
+  description: utari wallet API.
+  contact:
+    name: FUN FinTech Project
+  version: 1.0.0
+servers:
+  - url: https://funfintech.tk
+    description: Development server
+  - url: https://funfintech.tk
+    description: Staging server
+  - url: https://funfintech.tk
+    description: Production server
+paths:
+  /api/v1/signup:
+    post:
+      tags:
+        - v1
+      summary: Sign Up User
+      description: Create new user account.
+      parameters: []
+      requestBody:
+        description: Create new user info.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: success.
+
+  /api/v2/signin:
+    post:
+      tags:
+        - v2
+      summary: SignIn User
+      description: Sign in user.
+      parameters: []
+      requestBody:
+        description: Signin with user info.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: success.
+          headers: 
+            Authorization:
+              description: auth token.
+
+  /api/v2/balance:
+    post:
+      tags:
+        - v2
+      summary: Get balance of user
+      description: Get balance of user.
+      security:
+        - tokenAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+          description: auth token.
+      requestBody:
+        description: Get balance with userid.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserNoPassword'
+      responses:
+        '200':
+          description: success.
+          headers: 
+            Authorization:
+              description: auth token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balance'
+
+  /api/v2/history:
+    post:
+      tags:
+        - v2
+      summary: Get history of user
+      description: Get history of user.
+      security:
+        - tokenAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+          description: auth token.
+      requestBody:
+        description: Get history with userid.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserNoPassword'
+      responses:
+        '200':
+          description: success.
+          headers:
+            Authorization:
+              description: auth token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Histories'
+
+  /api/v2/transaction:
+    post:
+      tags:
+        - v2
+      summary: transaction
+      description: The user send to another user FUNney.
+      security:
+        - tokenAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+          description: auth token.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#components/schemas/Transaction'
+      responses:
+        '200':
+          description: success.
+          headers:
+            Authorization:
+              description: auth token.
+
+  /api/v2/password:
+    post:
+      tags:
+        - v2
+      summary: change password
+      description: Change user's password.
+      security:
+        - tokenAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+          description: auth token.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#components/schemas/User'
+      responses:
+        '200':
+          description: success.
+          headers:
+            Authorization:
+              description: auth token.
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - password
+      properties:
+        id:
+          type: string
+          example: test1234
+        password:
+          type: string
+          example: pass1234
+    UserNoPassword:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          example: test1234
+    Balance:
+      type: object
+      required:
+        - id
+        - balance
+        - unsettled
+      properties:
+        id:
+          type: string
+          description: student id.
+          example: X0000999
+        balance:
+          type: integer
+          example: 100
+        unsettled:
+          type: integer
+          description: value of unsettled in blockchain.
+          example: 0
+    Histories:
+      type: object
+      required:
+        - history
+        - count
+        - id
+      properties:
+        history:
+          type: array
+          description: histories sorted by timestamp.
+          items:
+            $ref: '#/components/schemas/History'
+        count:
+          type: integer
+          description: count of included histories.
+          example: 1
+        id:
+          type: string
+          description: userID
+          example: test1234
+    History:
+      type: object
+      required:
+        - source_id
+        - dest_id
+        - amount
+        - timestamp
+      properties:
+        source_id:
+          type: string
+          description: source user id.
+          example: sender
+        dest_id:
+          type: string
+          description: destination user id.
+          example: receiver
+        amount:
+          type: integer
+          example: 10
+        timestamp:
+          type: string
+          format: date-time
+          example: '2019-10-07T10:58:16.433279906Z'
+    Transaction:
+      type: object
+      required:
+        - id
+        - dest_id
+        - amount
+      properties:
+        id:
+          type: string
+          description: source user id.
+          example: sender
+        dest_id:
+          type: string
+          description: destination user id.
+          example: receiver
+        amount:
+          type: integer
+          example: 10
+
+  securitySchemes: 
+    tokenAuth:
+      type: apiKey
+      name: Authorization
+      in: header
+
+tags:
+  - name: v1
+    description: API v1 don't use auth token
+  - name: v2
+    description: API v2 use auth token
